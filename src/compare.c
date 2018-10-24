@@ -56,7 +56,7 @@ void train_compare(char *cfgfile, char *weightfile)
         avg_loss = avg_loss*.9 + loss*.1;
         printf("%.3f: %f, %f avg, %lf seconds, %ld images\n", (float)*net.seen/N, loss, avg_loss, sec(clock()-time), *net.seen);
         free_data(train);
-        if(i%100 == 0){
+        if(i%1000 == 0){
             char buff[256];
             sprintf(buff, "%s/%s_%d_minor_%d.weights",backup_directory,base, epoch, i);
             save_weights(net, buff);
