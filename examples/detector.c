@@ -13,6 +13,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
     float avg_loss = -1;
+    float best_avg_loss = 10000;
     network **nets = calloc(ngpus, sizeof(network));
 
     srand(time(0));
@@ -126,6 +127,13 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 #endif
         if (avg_loss < 0) avg_loss = loss;
         avg_loss = avg_loss*.9 + loss*.1;
+
+        if (avg_loss < best_avg_loss) {
+            best_avg_loss = avg_loss;
+            char buff[256];
+            sprintf(buff, "%s/best_average_loss.weight", backup_directory);
+            save_weights(net, buff);
+        }
 
         i = get_current_batch(net);
         // Save in stats.csv
