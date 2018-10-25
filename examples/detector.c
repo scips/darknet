@@ -14,6 +14,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     printf("%s\n", base);
     float avg_loss = -1;
     float best_avg_loss = 10000;
+    int best_iteration = 0;
     network **nets = calloc(ngpus, sizeof(network));
 
     srand(time(0));
@@ -133,6 +134,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             char buff[256];
             sprintf(buff, "%s/best_average_loss.weight", backup_directory);
             save_weights(net, buff);
+            best_iteration = i;
         }
 
         i = get_current_batch(net);
@@ -159,6 +161,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         // Hard limit Stop going further than 1700
         if(i>1700) {
             fclose(fp);
+            printf("Best iteration was %d\n", best_iteration);
             return;
         }
     }
