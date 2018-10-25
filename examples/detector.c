@@ -58,6 +58,8 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     pthread_t load_thread = load_data(args);
     double time;
     int count = 0;
+    FILE * fp;
+    fp = fopen("stats.csv", "w+");
     //while(i*imgs < N*120){
     while(get_current_batch(net) < net->max_batches){
         if(l.random && count++%10 == 0){
@@ -126,6 +128,8 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         avg_loss = avg_loss*.9 + loss*.1;
 
         i = get_current_batch(net);
+        // Save in stats.csv
+        fprintf(fp, "%ld, %f\n", i, avg_loss);
         printf("%ld: %f, %f avg, %f rate, %lf seconds, %d images\n", get_current_batch(net), loss, avg_loss, get_current_rate(net), what_time_is_it_now()-time, i*imgs);
         if(i%100==0){
 #ifdef GPU
@@ -146,6 +150,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         free_data(train);
         // Hard limit Stop going further than 1700
         if(i>1700) {
+            fclose(fp);
             return;
         }
     }
