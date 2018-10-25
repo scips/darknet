@@ -146,7 +146,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         free_data(train);
         // Hard limit Stop going further than 1700
         if(i>1700) {
-            return void;
+            return;
         }
     }
 #ifdef GPU
