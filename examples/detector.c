@@ -132,7 +132,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         if (avg_loss < best_avg_loss) {
             best_avg_loss = avg_loss;
             char buff[256];
-            sprintf(buff, "%s/best_average_loss.weight", backup_directory);
+            sprintf(buff, "%s/%s_best_avgs_loss.weights", backup_directory, base);
             save_weights(net, buff);
             best_iteration = i;
         }
