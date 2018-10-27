@@ -1,4 +1,4 @@
-classes = 1
+classes = 4
 train  = /content/darknet/keys_detection/train.txt
 valid  = /content/darknet/keys_detection/test.txt
 names = /content/darknet/keys_detection/classes.txt
