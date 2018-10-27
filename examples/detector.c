@@ -129,15 +129,18 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         if (avg_loss < 0) avg_loss = loss;
         avg_loss = avg_loss*.9 + loss*.1;
 
+        i = get_current_batch(net);
+
+        // save best weight ever
         if (avg_loss < best_avg_loss) {
             best_avg_loss = avg_loss;
             char buff[256];
+            fprintf(stderr, "Iteration: %05d is best iteration so far\n", i);
             sprintf(buff, "%s/%s_best_avg_loss.weights", backup_directory, base);
             save_weights(net, buff);
             best_iteration = i;
         }
 
-        i = get_current_batch(net);
         // Save in stats.csv
         fprintf(fp, "%ld, %f\n", i, avg_loss);
         fflush(fp);
@@ -155,12 +158,12 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             if(ngpus != 1) sync_nets(nets, ngpus, 0);
 #endif
             char buff[256];
-            sprintf(buff, "%s/%s_%d.weights", backup_directory, base, i);
+            sprintf(buff, "%s/%s_%05d.weights", backup_directory, base, i);
             save_weights(net, buff);
         }
         free_data(train);
-        // Hard limit Stop going further than 1700
-        if(i>1700) {
+        // Hard limit Stop going further than 10000
+        if(i>10000) {
             fclose(fp);
             printf("Best iteration was %d\n", best_iteration);
             return;
