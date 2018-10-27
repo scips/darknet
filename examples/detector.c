@@ -61,7 +61,11 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     double time;
     int count = 0;
     FILE * fp;
-    fp = fopen("stats.csv", "w+");
+
+
+    char statfilename[256];
+    sprintf(statfilename, "stats_%s.csv", base);
+    fp = fopen(statfilename, "w+");
     //while(i*imgs < N*120){
     while(get_current_batch(net) < net->max_batches){
         if(l.random && count++%10 == 0){
