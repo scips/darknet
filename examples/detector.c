@@ -61,7 +61,11 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     double time;
     int count = 0;
     FILE * fp;
-    fp = fopen("stats.csv", "w+");
+
+
+    char statfilename[256];
+    sprintf(statfilename, "stats_%s.csv", base);
+    fp = fopen(statfilename, "w+");
     //while(i*imgs < N*120){
     while(get_current_batch(net) < net->max_batches){
         if(l.random && count++%10 == 0){
@@ -129,15 +133,26 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         if (avg_loss < 0) avg_loss = loss;
         avg_loss = avg_loss*.9 + loss*.1;
 
+        i = get_current_batch(net);
+
+        // save best weight ever
         if (avg_loss < best_avg_loss) {
             best_avg_loss = avg_loss;
             char buff[256];
+            fprintf(stderr, "Iteration: %05d with avg_loss %f is best iteration so far\n", i, avg_loss);
             sprintf(buff, "%s/%s_best_avg_loss.weights", backup_directory, base);
             save_weights(net, buff);
             best_iteration = i;
+            // alert on slack
+            if(fork() == 0){
+                // Child process will return 0 from fork()
+                char buff_command[4096];
+                sprintf(buff_command,"curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Iteration %05d has avg_loss %f\"}' https://hooks.slack.com/services/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", i, avg_loss);
+                system(buff_command);
+                exit(0);
+            }
         }
 
-        i = get_current_batch(net);
         // Save in stats.csv
         fprintf(fp, "%ld, %f\n", i, avg_loss);
         fflush(fp);
@@ -155,12 +170,12 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             if(ngpus != 1) sync_nets(nets, ngpus, 0);
 #endif
             char buff[256];
-            sprintf(buff, "%s/%s_%d.weights", backup_directory, base, i);
+            sprintf(buff, "%s/%s_%05d.weights", backup_directory, base, i);
             save_weights(net, buff);
         }
         free_data(train);
-        // Hard limit Stop going further than 1700
-        if(i>1700) {
+        // Hard limit Stop going further than 10000
+        if(i>10000) {
             fclose(fp);
             printf("Best iteration was %d\n", best_iteration);
             return;
