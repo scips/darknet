@@ -143,6 +143,10 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             sprintf(buff, "%s/%s_best_avg_loss.weights", backup_directory, base);
             save_weights(net, buff);
             best_iteration = i;
+            // alert on slack
+            char buff_command[4096];
+            sprintf(buff_command,"curl -X POST -H 'Content-type: application/json' --data '{\"text\":\"Iteration %05d has avg_loss %f\"}' https://hooks.slack.com/services/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", i, avg_loss);
+            system(buff_command);
         }
 
         // Save in stats.csv
